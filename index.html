@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Editable Table with React</title>
+    <!-- React and ReactDOM CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+
+<body>
+    <!-- React Container -->
+    <div id="root"></div>
+
+    <!-- React Script -->
+    <script type="text/babel">
+        const { useState } = React;
+
+        function EditableTable() {
+            const initialData = [
+                { id: 1, content: "Onboarding Call" },
+                { id: 2, content: "Google Search Control Access" },
+                { id: 3, content: "Google Analytics Access" },
+                { id: 4, content: "Website Access" },
+                { id: 5, content: "Technical Audit" },
+                { id: 6, content: "Anchor Text and Semantic Analysis" },
+                { id: 7, content: "Competitor Analysis" },
+                { id: 8, content: "Anchor Text / URL Mapping" },
+                { id: 9, content: "Google Data Studio Report + Local Reporting Suite" },
+                { id: 10, content: "Site Level Optimization" },
+                { id: 11, content: "On Page Optimization" },
+                { id: 12, content: "Content Creation" },
+                { id: 13, content: "Content Publishing" },
+                { id: 14, content: "Premium Press Release" },
+                { id: 15, content: "Authority Niche Placements" },
+                { id: 16, content: "Review Management" },
+                { id: 17, content: "Index Links" },
+                { id: 18, content: "Video Recap" }
+            ];
+
+            const [tableData, setTableData] = useState(initialData);
+
+
+            const handleEdit = async (id, newContent) => {
+                try {
+                    console.log(`API call: Updating row ${id} with content: ${newContent}`);
+
+                    // API call using fetch POST method
+                    const response = await fetch("http://localhost:3000/post", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json", 
+                        },
+                        body: JSON.stringify({ id: id, content: newContent }), 
+                    });
+
+                    // Parse the JSON response
+                    const responseData = await response.json();
+                    
+                    if (response.ok && responseData.status === "success") {
+                        setTableData((prevData) =>
+                            prevData.map((row) =>
+                                row.id === id ? { ...row, content: responseData.updatedContent } : row
+                            )
+                        );
+                        console.log("Content updated successfully!");
+                    } else {
+                        console.error("API Error: Failed to update content");
+                    }
+                } catch (error) {
+                    console.error("Failed to update content:", error.message);
+                }
+            };
+
+
+
+            // Handle content editing when pressing Enter key
+            const handleKeyDown = (e, id, currentValue) => {
+                if (e.key === "Enter") {
+                    handleEdit(id, e.target.value); // Call API to update content
+                }
+            };
+
+            return (
+                <div style={{ padding: "20px", maxWidth: "500px", margin: "auto" }}>
+                    <h3>Editable Table</h3>
+                    <table
+                        style={{
+                            width: "100%",
+                            borderCollapse: "collapse",
+                            border: "1px solid green",
+                        }}
+                    >
+                        <thead>
+                            <tr>
+                                <th style={styles.cell}>Month1</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {tableData.map((row) => (
+                                <tr key={row.id}>
+                                    <td style={styles.cell}>
+                                        {row.content}
+                                    </td>
+                                    {[...Array(4)].map((_, index) => (
+                                        <td key={index} style={styles.cell}>
+                                            <input
+                                                type="text"
+                                                defaultValue=""
+                                                onKeyDown={(e) => handleKeyDown(e, row.id, e.target.value)}
+                                                style={styles.input}
+                                            />
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            );
+        }
+
+        const styles = {
+            cell: {
+                border: "1px solid green",
+                textAlign: "center",
+            },
+            input: {
+                width: "100%",
+                padding: "6px",
+                borderWidth: "0px",
+                boxSizing: "border-box",
+                textAlign: "center",
+                height: "auto"
+            },
+        };
+
+        // Render React Component
+        const root = ReactDOM.createRoot(document.getElementById("root"));
+        root.render(<EditableTable />);
+    </script>
+</body>
+
+</html>
